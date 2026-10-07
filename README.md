@@ -36,9 +36,9 @@ msg_01M4C162KRDYQJ1XB576YVCSK6 from alice-claude · thread thr_01M4C162KA3HAXRBJ
   transfer_failed. Those customers get a callback offer, so never retry more than once.
 ```
 
-In practice the agents run these commands themselves, through the skill, and can
-[stay reachable](#staying-reachable) so they react as soon as a message arrives. If a machine
-is offline, messages wait in the sender's outbox until both machines are online.
+In practice the agents run these commands themselves, through the skill, and can stay
+reachable so they react as soon as a message arrives. If a machine is offline, messages wait
+in the sender's outbox until both machines are online.
 
 Peers can also offer handlers: commands such as `claude -p` that run unattended when a peer
 asks, for example for a read-only code review. See [Configuration](#configuration).
@@ -68,86 +68,26 @@ alink relies on Unix sockets.
 
 ## Quick start
 
-Create an identity, then invite the other machine:
-
-```sh
-alink init --name alice-claude    # creates ~/.config/alink, or $ALINK_HOME
-alink invite                      # prints alink://invite/... and waits for the peer
-```
-
-Send the invite to the other person over a channel you trust. It works once and expires
-after 24 hours by default. On their machine:
-
-```sh
-alink init --name bob-codex
-alink join 'alink://invite/...'
-```
-
-Both sides now hold each other's public keys. Run `alink serve` in a separate terminal, or
-[as a service](skills/alink/references/service.md), to receive messages at any time and to
-run handlers. Without it, alink is only online while a command runs.
-
-Every command takes `--json` for scripts and agents. `alink help <command>` shows a
-command's options:
-
-```text
-Encrypted, asynchronous agent-to-agent messaging over iroh
-
-Usage: alink [OPTIONS] <COMMAND>
-
-Commands:
-  init      Create this endpoint's identity and config
-  whoami    Show this endpoint's identity
-  serve     Run the node: receive messages, deliver the outbox, run handlers
-  invite    Create a one-time invite for another endpoint
-  join      Redeem an invite and pair with the endpoint that created it
-  peers     List and manage paired peers
-  send      Send a message to a peer
-  reply     Reply to a received message, in the same thread
-  run       Ask a peer to run one of its handlers
-  wait      Wait for a request to finish, or for unread messages (in a thread or anywhere)
-  listen    Report new unread messages as they arrive, without marking them as read
-  inbox     Show received messages and responses. Shown messages are marked as read
-  requests  List requests and their states
-  cancel    Ask a peer to stop working on a request you sent
-  outbox    Show outgoing messages that are not yet delivered
-  skill     Print the agent skill (SKILL.md) that teaches agents to use alink
-  help      Print this message or the help of the given subcommand(s)
-
-Options:
-      --json     Print machine-readable JSON
-  -h, --help     Print help
-  -V, --version  Print version
-```
-
-## Using with Claude Code and Codex
-
 Install the agent skill with the [skills CLI](https://skills.sh). It asks which agents to
-install it for:
+install it for, such as Claude Code and Codex:
 
 ```sh
 npx skills add dstotijn/alink
 ```
 
-`alink skill` prints the same `SKILL.md`. With the skill installed, ask your agent in plain
-language, for example "ask alice-claude for a second opinion on this diff" or "check whether
-any agent replied". The skill covers pairing, messages, requests and waiting for answers.
+From there, ask your agent in plain language and let it run alink for you. For example:
 
-### Staying reachable
+- "Set up alink and create an invite for Alice." Your agent gives you an invite link. Send
+  it to Alice over a channel you trust: it works once and expires after 24 hours.
+- On Alice's machine: "Join this alink invite: alink://invite/..."
+- "Ask Alice's agent whether failed transfers should be retried."
+- "Check whether any agent replied."
+- "Stay reachable for Alice's agent while I work on something else."
+- "Keep alink running in the background, also after a reboot."
 
-Handlers serve unattended requests. For a live Claude Code or Codex session that should
-react when a peer writes, `alink listen` watches for unread messages in any thread. It never
-marks them as read; it prints one line per new batch (`--json` for JSON) and, with
-`--notify`, runs a command that receives only metadata (`ALINK_COUNT`, `ALINK_FROM`,
-`ALINK_THREADS`, `ALINK_MESSAGE_IDS`). For Codex, that command can queue a fixed prompt into
-the running session:
-
-```sh
-alink listen --notify 'codex queue --thread "$CODEX_THREAD_ID" --message "New alink messages from $ALINK_FROM. Run alink inbox --json."'
-```
-
-Claude Code can watch `alink listen --json` with its Monitor tool, or keep a background
-`alink wait` running. The skill explains which option an agent should pick.
+To receive messages at any time and to run handlers, `alink serve` needs to be running. The
+last request above has your agent install it as a service. Run `alink help` to see the
+commands the skill uses.
 
 ## How it works
 
@@ -312,34 +252,6 @@ working directory and a sandbox, and only list peers you would trust with that a
 the [security model](#security-model) and [SECURITY.md](SECURITY.md).
 
 </details>
-
-## Development
-
-```sh
-cargo fmt --check && cargo clippy --all-targets -- -D warnings
-cargo deny check                 # advisories and licenses (cargo-deny is pinned in mise.toml)
-cargo test                       # unit tests
-cargo build && tests/e2e.sh      # two local identities: pairing, requests, offline delivery (needs jq)
-```
-
-Set `ALINK_HOME` to run several identities on one machine. `mode = "local"` in `[network]`
-keeps test traffic off the public relays.
-
-`src/` layout: `proto.rs` (wire types), `node.rs` (iroh endpoint, delivery, invites),
-`handler.rs` (running requests), `store.rs` (SQLite), `control.rs` (local socket),
-`ticket.rs` (invite format), `config.rs`, `main.rs` (CLI).
-
-### Releasing
-
-Bump `version` in `Cargo.toml`, commit, then tag and push:
-
-```sh
-git tag v0.1.0 && git push origin v0.1.0
-```
-
-The release workflow builds the binaries, checks that the tag matches `Cargo.toml` and
-publishes the GitHub release. The Pages workflow publishes `install.sh` whenever it changes
-on `main`; set the repository's Pages source to "GitHub Actions" once.
 
 ## License
 
