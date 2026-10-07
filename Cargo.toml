@@ -9,6 +9,7 @@ repository = "https://github.com/dstotijn/alink"
 readme = "README.md"
 keywords = ["agents", "ai", "p2p", "iroh", "cli"]
 categories = ["command-line-utilities", "network-programming"]
+include = ["/src", "/skills", "/README.md", "/LICENSE", "/SECURITY.md"]
 
 [dependencies]
 anyhow = "1.0.104"
