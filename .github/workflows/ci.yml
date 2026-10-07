@@ -19,8 +19,8 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
       - run: mise exec -- cargo fmt --check
       - run: mise exec -- cargo clippy --locked --all-targets -- -D warnings
       - run: mise exec -- cargo deny check
@@ -37,8 +37,8 @@ jobs:
         runner: [ubuntu-24.04, macos-latest]
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
       - run: mise exec -- cargo test --locked
       - run: mise exec -- cargo build --locked
       - name: End-to-end test
@@ -48,7 +48,7 @@ jobs:
     name: Minimum supported Rust version
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check with the rust-version from Cargo.toml
         run: |
           msrv=$(sed -n 's/^rust-version = "\(.*\)"$/\1/p' Cargo.toml)
