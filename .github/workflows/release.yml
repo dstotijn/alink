@@ -23,7 +23,7 @@ jobs:
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check that the tag matches the Cargo.toml version
         run: |
@@ -33,7 +33,7 @@ jobs:
             exit 1
           fi
 
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v5
 
       # mise drives rustup with RUSTUP_TOOLCHAIN set to the version pinned in mise.toml.
       - name: Add the build target
@@ -58,7 +58,7 @@ jobs:
             shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256"
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: alink-${{ matrix.target }}
           path: alink-${{ matrix.target }}.tar.gz*
@@ -68,7 +68,7 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           path: dist
           merge-multiple: true
