@@ -1,0 +1,38 @@
+# cargo-deny configuration: run `cargo deny check` (pinned in mise.toml).
+
+[graph]
+all-features = true
+
+[advisories]
+# Fail on any RustSec advisory: vulnerabilities, unmaintained and unsound crates.
+ignore = [
+    # paste is unmaintained but not vulnerable. It is a compile-time macro crate that iroh
+    # pulls in through netwatch -> netlink-packet-core; revisit when iroh drops it.
+    { id = "RUSTSEC-2024-0436", reason = "transitive via iroh, unmaintained but not vulnerable" },
+]
+
+[licenses]
+# Permissive licenses compatible with distributing alink under MIT.
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CDLA-Permissive-2.0",
+    "ISC",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+confidence-threshold = 0.9
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

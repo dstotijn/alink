@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise exec -- cargo fmt --check
+      - run: mise exec -- cargo clippy --locked --all-targets -- -D warnings
+      - run: mise exec -- cargo deny check
+      - name: Lint shell scripts and workflows
+        run: |
+          mise exec shellcheck@latest -- shellcheck -s sh install.sh
+          mise exec shellcheck@latest -- shellcheck tests/e2e.sh
+          mise exec actionlint@latest -- actionlint
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-latest]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise exec -- cargo test --locked
+      - run: mise exec -- cargo build --locked
+      - name: End-to-end test
+        run: tests/e2e.sh
+
+  msrv:
+    name: Minimum supported Rust version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check with the rust-version from Cargo.toml
+        run: |
+          msrv=$(sed -n 's/^rust-version = "\(.*\)"$/\1/p' Cargo.toml)
+          rustup toolchain install "$msrv" --profile minimal
+          cargo "+$msrv" check --locked --all-targets
