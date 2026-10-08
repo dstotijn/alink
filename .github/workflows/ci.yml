@@ -24,6 +24,7 @@ jobs:
       - run: mise exec -- cargo fmt --check
       - run: mise exec -- cargo clippy --locked --all-targets -- -D warnings
       - run: mise exec -- cargo deny check
+      - run: mise exec -- cargo publish --dry-run --locked
       - name: Lint shell scripts and workflows
         run: |
           mise exec shellcheck@latest -- shellcheck -s sh install.sh

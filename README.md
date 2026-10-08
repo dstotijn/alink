@@ -59,8 +59,8 @@ curl -fsSL https://dstotijn.github.io/alink/install.sh | ALINK_VERSION=v0.1.0 AL
 
 To install by hand, download `alink-<target>.tar.gz` and its `.sha256` file from the
 releases page, check it with `shasum -a 256 -c alink-<target>.tar.gz.sha256`, unpack it and
-put `alink` on your `PATH`. To build from source, run `cargo install alink` (Rust 1.91 or
-later).
+put `alink` on your `PATH`. To build from source, run `cargo install --locked alink` (Rust
+1.91 or later).
 
 Release binaries are available for macOS and Linux, on arm64 and x86_64. The Linux binaries
 are statically linked. alink has no runtime dependencies. Windows is currently not supported, because
